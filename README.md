@@ -125,11 +125,17 @@ RuleEngineCLI/
 │   │   │   ├── Mappers/
 │   │   │   │   └── RuleMapper.cs
 │   │   │   └── Repositories/
-│   │   │       └── JsonRuleRepository.cs
+│   │   │       ├── JsonRuleRepository.cs
+│   │   │       └── CachedRuleRepository.cs (Phase 1)
 │   │   ├── Evaluation/
-│   │   │   └── ComparisonExpressionEvaluator.cs
-│   │   └── Logging/
-│   │       └── ConsoleLogger.cs
+│   │   │   ├── ComparisonExpressionEvaluator.cs
+│   │   │   ├── NCalcExpressionEvaluator.cs (Phase 1)
+│   │   │   └── AdvancedOperatorsEvaluator.cs (Phase 3)
+│   │   ├── Logging/
+│   │   │   ├── ConsoleLogger.cs
+│   │   │   └── StructuredLogger.cs (Phase 2)
+│   │   └── Validation/
+│   │       └── JsonSchemaValidator.cs (Phase 2)
 │   │
 │   └── RuleEngineCLI.Presentation.CLI/
 │       ├── Program.cs
@@ -145,6 +151,10 @@ RuleEngineCLI/
 │   └── RuleEngineCLI.Infrastructure.Tests/
 │
 ├── examples/
+│   ├── ConsumerExample/ (Cómo usar como librería)
+│   ├── AdvancedExample/ (Phase 1: Cache + NCalc + Metrics)
+│   ├── ConfigurationExample/ (Phase 2: Options + Validation + Logging)
+│   ├── OperatorsExample/ (Phase 3: Operadores Avanzados)
 │   ├── rules.json
 │   ├── valid-input.json
 │   ├── invalid-input.json
@@ -281,6 +291,8 @@ dotnet run --project src/RuleEngineCLI.Presentation.CLI -- \
 
 ### Expresiones Soportadas
 
+#### Operadores Básicos (ComparisonExpressionEvaluator)
+
 | Operador | Descripción | Ejemplo |
 |----------|-------------|---------|
 | `==` | Igual a | `status == "active"` |
@@ -291,6 +303,32 @@ dotnet run --project src/RuleEngineCLI.Presentation.CLI -- \
 | `<=` | Menor o igual | `quantity <= 10` |
 | `&&` | AND lógico | `isActive == true && isVerified == true` |
 | `\|\|` | OR lógico | `role == "admin" \|\| role == "superadmin"` |
+
+#### Operadores Avanzados ✨ (Phase 3 - AdvancedOperatorsEvaluator)
+
+| Operador | Sintaxis | Ejemplo |
+|----------|----------|---------|
+| **RegEx** | `field RegEx pattern` | `email RegEx ^[a-z]+@[a-z]+\\.com$` |
+| **In** | `field In [val1, val2, ...]` | `country In [Argentina, Brazil]` |
+| **NotIn** | `field NotIn [val1, val2, ...]` | `status NotIn [banned, deleted]` |
+| **Between** | `field Between min And max` | `age Between 18 And 65` |
+| **IsNull** | `field IsNull` | `middleName IsNull` |
+| **IsNotNull** | `field IsNotNull` | `email IsNotNull` |
+| **StartsWith** | `field StartsWith value` | `username StartsWith admin` |
+| **EndsWith** | `field EndsWith value` | `email EndsWith @company.com` |
+| **Contains** | `field Contains value` | `description Contains urgent` |
+
+📚 **Ver ejemplos completos:** [examples/OperatorsExample](examples/OperatorsExample/)
+
+#### Expresiones Matemáticas (Phase 1 - NCalcExpressionEvaluator)
+
+- Funciones matemáticas: `Math.Pow(age, 2) > 100`
+- Funciones de fecha: `DateAdd(startDate, 30) > endDate`
+- Condicionales complejos: `if(age >= 18, 'adult', 'minor') == 'adult'`
+
+📚 **Ver ejemplos completos:** [examples/AdvancedExample](examples/AdvancedExample/)
+
+---
 
 ### Tipos de Datos Soportados
 
@@ -356,6 +394,59 @@ dotnet test tests/RuleEngineCLI.Domain.Tests
 **Por qué**: Control total sobre el grafo de dependencias, educativo, sin magia de frameworks.
 
 ## 🔄 Extensibilidad Futura
+
+### ✅ Phase 1: Quick Wins (Completado)
+- ✅ **Cache**: `CachedRuleRepository` - 99.5% mejora en performance
+- ✅ **NCalc**: `NCalcExpressionEvaluator` - Expresiones matemáticas complejas
+- ✅ **Metrics**: `InstrumentedRuleEngine` - Estadísticas de evaluación
+
+**Ver ejemplo:** [examples/AdvancedExample](examples/AdvancedExample/)
+
+---
+
+### ✅ Phase 2: Configuración Avanzada (Completado)
+- ✅ **Options Pattern**: `RuleEngineOptions` con configuración multi-ambiente
+- ✅ **Schema Validation**: `JsonSchemaValidator` para validar reglas antes de cargar
+- ✅ **Structured Logging**: `StructuredLogger` con 3 formatos (Console, File, JSON)
+
+**Ver ejemplo:** [examples/ConfigurationExample](examples/ConfigurationExample/)
+
+---
+
+### ✅ Phase 3: Operadores Avanzados (Completado)
+
+Agregados **9 operadores avanzados** para validaciones complejas:
+
+#### Operadores Implementados
+
+| Operador | Descripción | Ejemplo |
+|----------|-------------|---------|
+| **RegEx** | Validación por expresiones regulares con timeout | `email RegEx ^[a-z]+@[a-z]+\\.com$` |
+| **In** | Verificar pertenencia a lista (case-insensitive) | `country In [Argentina, Brazil]` |
+| **NotIn** | Verificar exclusión de lista (case-insensitive) | `status NotIn [banned, suspended]` |
+| **Between** | Validar rango numérico (inclusive) | `age Between 18 And 65` |
+| **IsNull** | Verificar que campo no existe o es null | `middleName IsNull` |
+| **IsNotNull** | Verificar que campo existe y no es null | `email IsNotNull` |
+| **StartsWith** | Verificar prefijo de string (case-insensitive) | `username StartsWith admin` |
+| **EndsWith** | Verificar sufijo de string (case-insensitive) | `email EndsWith @company.com` |
+| **Contains** | Verificar substring (case-insensitive) | `description Contains urgent` |
+
+#### Características Técnicas
+- ✅ **Protección ReDoS**: RegEx con timeout de 1 segundo
+- ✅ **Case-Insensitive**: Todos los operadores de string
+- ✅ **Conversión Automática**: int → double en Between
+- ✅ **Precedencia Correcta**: Evita conflictos entre operadores
+
+**Ver ejemplo completo:** [examples/OperatorsExample](examples/OperatorsExample/)
+
+---
+
+### 🔜 Phase 4: Performance & Scaling (Pendiente)
+- ⏳ Evaluación paralela de reglas con `Parallel.ForEach`
+- ⏳ Compilación de expresiones (Expression Trees)
+- ⏳ Pooling de objetos para reducir GC pressure
+
+---
 
 ### Nuevos Tipos de Reglas
 ```csharp
