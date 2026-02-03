@@ -155,6 +155,59 @@ RuleEngineCLI/
 
 ## 🚀 Uso
 
+### Como Librería .NET (Recomendado)
+
+**Ver ejemplo completo en: [examples/ConsumerExample](examples/ConsumerExample/)**
+
+```bash
+# Ejecutar el ejemplo funcional
+cd examples/ConsumerExample
+dotnet run
+```
+
+El proyecto de ejemplo muestra cómo:
+- Configurar Dependency Injection
+- Referenciar los proyectos de RuleEngineCLI
+- Validar objetos de dominio
+- Manejar resultados de validación
+
+**Código de ejemplo:**
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using RuleEngineCLI.Application.DTOs;
+using RuleEngineCLI.Application.Services;
+using RuleEngineCLI.Domain.Repositories;
+using RuleEngineCLI.Infrastructure.Evaluation;
+using RuleEngineCLI.Infrastructure.Logging;
+using RuleEngineCLI.Infrastructure.Persistence.Repositories;
+
+// Configurar servicios
+var services = new ServiceCollection();
+services.AddSingleton<ILogger>(new ConsoleLogger());
+services.AddSingleton<IRuleRepository>(new JsonRuleRepository("rules.json"));
+services.AddSingleton<IExpressionEvaluator, ComparisonExpressionEvaluator>();
+services.AddSingleton<IRuleEngine, RuleEngine>();
+
+var serviceProvider = services.BuildServiceProvider();
+var ruleEngine = serviceProvider.GetRequiredService<IRuleEngine>();
+
+// Validar datos
+var input = new ValidationInputDto(new Dictionary<string, object?>
+{
+    { "age", 25 },
+    { "balance", 100 }
+});
+
+var report = await ruleEngine.EvaluateEnabledRulesAsync(input);
+
+if (report.Status == "FAIL")
+{
+    foreach (var error in report.Results.Where(r => !r.Passed))
+        Console.WriteLine($"Error: {error.Message}");
+}
+```
+
 ### Compilar el Proyecto
 
 ```bash
@@ -162,7 +215,7 @@ cd RuleEngineCLI
 dotnet build
 ```
 
-### Ejecutar Validación
+### Ejecutar Validación con CLI
 
 ```bash
 # Usando archivos JSON
