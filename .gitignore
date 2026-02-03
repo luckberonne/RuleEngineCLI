@@ -1,0 +1,63 @@
+## bin
+[Bb]in/
+[Oo]bj/
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio cache/options
+.vs/
+.vscode/
+
+## Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+## NuGet packages
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Build outputs
+*.dll
+*.exe
+*.pdb
+*.cache
+
+## Coverage
+coverage/
+*.coverage
+*.coveragexml
+
+## Rider
+.idea/
+*.sln.iml
+
+## Mac
+.DS_Store
+
+## Temporary files
+*.tmp
+*.temp
+*.log
