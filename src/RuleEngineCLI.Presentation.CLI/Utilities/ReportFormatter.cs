@@ -77,10 +77,10 @@ public static class ReportFormatter
             foreach (var result in report.Results)
             {
                 var statusIcon = result.Passed ? "✓" : "✗";
-                var statusColor = result.Passed ? ConsoleColor.Green : ConsoleColor.Red;
+                var resultColor = result.Passed ? ConsoleColor.Green : ConsoleColor.Red;
 
                 Console.Write("  ");
-                PrintColored(statusIcon, statusColor, newLine: false);
+                PrintColored(statusIcon, resultColor, newLine: false);
                 Console.WriteLine($" [{result.RuleId}] {result.Description}");
                 
                 if (!result.Passed)
