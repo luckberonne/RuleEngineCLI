@@ -74,7 +74,8 @@ class Program
             new ConsoleLogger(LogLevel.Information, includeTimestamp: false));
 
         // Configurar repositorio de reglas apuntando al archivo JSON
-        var rulesPath = Path.Combine("..", "rules.json");
+        // Navegar desde bin/Debug/net8.0 hasta la raíz del proyecto
+        var rulesPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "examples", "rules.json"));
         services.AddSingleton<IRuleRepository>(sp => 
             new JsonRuleRepository(rulesPath));
 
