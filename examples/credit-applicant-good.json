@@ -1,0 +1,16 @@
+{
+  "clientId": "CLIENT_001",
+  "applicantName": "John Smith",
+  "age": 35,
+  "creditScore": 780,
+  "monthlyIncome": 5500,
+  "monthlyDebtPayments": 1200,
+  "employmentYears": 8,
+  "loanAmount": 250000,
+  "downPayment": 50000,
+  "collateralValue": 280000,
+  "monthlyPayment": 1350,
+  "yearsSinceBankruptcy": 0,
+  "loanType": "mortgage",
+  "applicationDate": "2026-02-03"
+}

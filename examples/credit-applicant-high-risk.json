@@ -1,0 +1,16 @@
+{
+  "clientId": "CLIENT_003",
+  "applicantName": "Bob Johnson",
+  "age": 22,
+  "creditScore": 520,
+  "monthlyIncome": 2800,
+  "monthlyDebtPayments": 1400,
+  "employmentYears": 1,
+  "loanAmount": 150000,
+  "downPayment": 15000,
+  "collateralValue": 130000,
+  "monthlyPayment": 950,
+  "yearsSinceBankruptcy": 3,
+  "loanType": "mortgage",
+  "applicationDate": "2026-02-03"
+}

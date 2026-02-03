@@ -1,0 +1,107 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "description": "Credit Risk Scoring Rules - Evaluates client creditworthiness",
+    "lastUpdated": "2026-02-03",
+    "author": "Risk Assessment Team",
+    "scoringScale": "0-100 (Higher = Lower Risk)"
+  },
+  "rules": [
+    {
+      "id": "CREDIT_SCORE_HIGH",
+      "description": "High credit score indicates low risk",
+      "expression": "creditScore >= 750",
+      "severity": "INFO",
+      "errorMessage": "Excellent credit score",
+      "isEnabled": true
+    },
+    {
+      "id": "CREDIT_SCORE_MEDIUM",
+      "description": "Medium credit score - moderate risk",
+      "expression": "creditScore >= 600 && creditScore < 750",
+      "severity": "WARN",
+      "errorMessage": "Fair credit score - additional review recommended",
+      "isEnabled": true
+    },
+    {
+      "id": "CREDIT_SCORE_LOW",
+      "description": "Low credit score indicates high risk",
+      "expression": "creditScore < 600",
+      "severity": "ERROR",
+      "errorMessage": "Poor credit score - high risk application",
+      "isEnabled": true
+    },
+    {
+      "id": "INCOME_STABILITY",
+      "description": "Stable income required for credit approval",
+      "expression": "monthlyIncome >= 3000 && employmentYears >= 2",
+      "severity": "ERROR",
+      "errorMessage": "Insufficient income stability",
+      "isEnabled": true
+    },
+    {
+      "id": "DEBT_TO_INCOME_RATIO",
+      "description": "Debt-to-income ratio must be below 43%",
+      "expression": "(monthlyDebtPayments / monthlyIncome) * 100 <= 43",
+      "severity": "ERROR",
+      "errorMessage": "Debt-to-income ratio too high",
+      "isEnabled": true
+    },
+    {
+      "id": "DEBT_TO_INCOME_WARNING",
+      "description": "Debt-to-income ratio should be below 36% for best rates",
+      "expression": "(monthlyDebtPayments / monthlyIncome) * 100 <= 36",
+      "severity": "WARN",
+      "errorMessage": "Debt-to-income ratio elevated - consider higher interest rate",
+      "isEnabled": true
+    },
+    {
+      "id": "AGE_REQUIREMENT",
+      "description": "Applicant must be at least 18 years old",
+      "expression": "age >= 18",
+      "severity": "ERROR",
+      "errorMessage": "Applicant must be 18 or older",
+      "isEnabled": true
+    },
+    {
+      "id": "AGE_OPTIMAL",
+      "description": "Optimal age range for credit scoring",
+      "expression": "age >= 25 && age <= 65",
+      "severity": "INFO",
+      "errorMessage": "Age in optimal range for credit scoring",
+      "isEnabled": true
+    },
+    {
+      "id": "DOWN_PAYMENT_MINIMUM",
+      "description": "Minimum down payment required",
+      "expression": "downPayment >= loanAmount * 0.20",
+      "severity": "ERROR",
+      "errorMessage": "Minimum 20% down payment required",
+      "isEnabled": true
+    },
+    {
+      "id": "COLLATERAL_VALUE",
+      "description": "Collateral must cover at least 100% of loan",
+      "expression": "collateralValue >= loanAmount",
+      "severity": "ERROR",
+      "errorMessage": "Insufficient collateral value",
+      "isEnabled": true
+    },
+    {
+      "id": "PAYMENT_TO_INCOME_RATIO",
+      "description": "Monthly payment should not exceed 28% of income",
+      "expression": "(monthlyPayment / monthlyIncome) * 100 <= 28",
+      "severity": "WARN",
+      "errorMessage": "Monthly payment ratio high - affordability concern",
+      "isEnabled": true
+    },
+    {
+      "id": "BANKRUPTCY_CHECK",
+      "description": "No bankruptcy in last 7 years",
+      "expression": "yearsSinceBankruptcy >= 7 || yearsSinceBankruptcy == 0",
+      "severity": "ERROR",
+      "errorMessage": "Recent bankruptcy disqualifies application",
+      "isEnabled": true
+    }
+  ]
+}

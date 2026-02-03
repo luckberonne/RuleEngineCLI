@@ -1,0 +1,16 @@
+{
+  "clientId": "CLIENT_002",
+  "applicantName": "Jane Doe",
+  "age": 28,
+  "creditScore": 650,
+  "monthlyIncome": 4200,
+  "monthlyDebtPayments": 1800,
+  "employmentYears": 3,
+  "loanAmount": 180000,
+  "downPayment": 27000,
+  "collateralValue": 200000,
+  "monthlyPayment": 1200,
+  "yearsSinceBankruptcy": 0,
+  "loanType": "mortgage",
+  "applicationDate": "2026-02-03"
+}
