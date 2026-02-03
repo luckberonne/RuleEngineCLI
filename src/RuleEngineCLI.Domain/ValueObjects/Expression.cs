@@ -21,14 +21,26 @@ public sealed class Expression : IEquatable<Expression>
         if (value.Length > 500)
             throw new ArgumentException("Expression cannot exceed 500 characters.", nameof(value));
 
-        // Validación básica: debe contener al menos un operador de comparación
+        // Validación básica: debe contener al menos un operador de comparación o avanzado
         var hasOperator = value.Contains("==") || value.Contains("!=") || 
                          value.Contains(">=") || value.Contains("<=") ||
                          value.Contains(">") || value.Contains("<") ||
-                         value.Contains("&&") || value.Contains("||");
+                         value.Contains("&&") || value.Contains("||") ||
+                         // Operadores avanzados (Fase 3)
+                         value.Contains("RegEx", StringComparison.OrdinalIgnoreCase) ||
+                         value.Contains("Regex", StringComparison.OrdinalIgnoreCase) ||
+                         value.Contains("Matches", StringComparison.OrdinalIgnoreCase) ||
+                         value.Contains("In ", StringComparison.OrdinalIgnoreCase) ||
+                         value.Contains("NotIn", StringComparison.OrdinalIgnoreCase) ||
+                         value.Contains("Between", StringComparison.OrdinalIgnoreCase) ||
+                         value.Contains("IsNull", StringComparison.OrdinalIgnoreCase) ||
+                         value.Contains("IsNotNull", StringComparison.OrdinalIgnoreCase) ||
+                         value.Contains("StartsWith", StringComparison.OrdinalIgnoreCase) ||
+                         value.Contains("EndsWith", StringComparison.OrdinalIgnoreCase) ||
+                         value.Contains("Contains", StringComparison.OrdinalIgnoreCase);
 
         if (!hasOperator)
-            throw new ArgumentException("Expression must contain at least one comparison or logical operator.", nameof(value));
+            throw new ArgumentException("Expression must contain at least one comparison, logical, or advanced operator.", nameof(value));
 
         return new Expression(value.Trim());
     }
