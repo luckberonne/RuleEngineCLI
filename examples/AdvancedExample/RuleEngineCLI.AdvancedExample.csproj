@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Referencias a los proyectos de RuleEngineCLI -->
+    <ProjectReference Include="..\..\src\RuleEngineCLI.Domain\RuleEngineCLI.Domain.csproj" />
+    <ProjectReference Include="..\..\src\RuleEngineCLI.Application\RuleEngineCLI.Application.csproj" />
+    <ProjectReference Include="..\..\src\RuleEngineCLI.Infrastructure\RuleEngineCLI.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+  </ItemGroup>
+
+</Project>
