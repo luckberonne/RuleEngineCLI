@@ -1,0 +1,74 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "description": "Business validation rules for user registration and data compliance",
+    "lastUpdated": "2026-02-02",
+    "author": "RuleEngine Team"
+  },
+  "rules": [
+    {
+      "id": "RULE_001",
+      "description": "User age must be 18 or older",
+      "expression": "age >= 18",
+      "severity": "ERROR",
+      "errorMessage": "User must be at least 18 years old to register.",
+      "isEnabled": true
+    },
+    {
+      "id": "RULE_002",
+      "description": "Start date must be before end date",
+      "expression": "startDate < endDate",
+      "severity": "ERROR",
+      "errorMessage": "Start date must be earlier than end date.",
+      "isEnabled": true
+    },
+    {
+      "id": "RULE_003",
+      "description": "Account balance must be positive or zero",
+      "expression": "balance >= 0",
+      "severity": "ERROR",
+      "errorMessage": "Account balance cannot be negative.",
+      "isEnabled": true
+    },
+    {
+      "id": "RULE_004",
+      "description": "Username should not be empty",
+      "expression": "username != null",
+      "severity": "ERROR",
+      "errorMessage": "Username is required and cannot be null.",
+      "isEnabled": true
+    },
+    {
+      "id": "RULE_005",
+      "description": "Email domain should be corporate",
+      "expression": "emailDomain == company.com",
+      "severity": "WARN",
+      "errorMessage": "Recommended to use corporate email domain (company.com).",
+      "isEnabled": true
+    },
+    {
+      "id": "RULE_006",
+      "description": "Maximum transaction amount check",
+      "expression": "transactionAmount <= 10000",
+      "severity": "WARN",
+      "errorMessage": "Transaction amount exceeds recommended maximum of $10,000.",
+      "isEnabled": true
+    },
+    {
+      "id": "RULE_007",
+      "description": "User must be active and verified",
+      "expression": "isActive == true && isVerified == true",
+      "severity": "ERROR",
+      "errorMessage": "User must be both active and verified to proceed.",
+      "isEnabled": true
+    },
+    {
+      "id": "RULE_008",
+      "description": "Password strength indicator",
+      "expression": "passwordLength >= 8",
+      "severity": "INFO",
+      "errorMessage": "Password should be at least 8 characters for better security.",
+      "isEnabled": false
+    }
+  ]
+}

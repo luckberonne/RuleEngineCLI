@@ -1,0 +1,12 @@
+{
+  "age": 25,
+  "startDate": "2026-01-01",
+  "endDate": "2026-12-31",
+  "balance": 1500.50,
+  "username": "john.doe",
+  "emailDomain": "company.com",
+  "transactionAmount": 5000,
+  "isActive": true,
+  "isVerified": true,
+  "passwordLength": 12
+}

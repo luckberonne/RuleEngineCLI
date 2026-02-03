@@ -1,0 +1,12 @@
+{
+  "age": 16,
+  "startDate": "2026-12-31",
+  "endDate": "2026-01-01",
+  "balance": -100,
+  "username": null,
+  "emailDomain": "gmail.com",
+  "transactionAmount": 15000,
+  "isActive": true,
+  "isVerified": false,
+  "passwordLength": 6
+}

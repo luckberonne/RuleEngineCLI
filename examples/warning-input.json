@@ -1,0 +1,12 @@
+{
+  "age": 30,
+  "startDate": "2026-03-01",
+  "endDate": "2026-06-30",
+  "balance": 500,
+  "username": "jane.smith",
+  "emailDomain": "personal.com",
+  "transactionAmount": 12000,
+  "isActive": true,
+  "isVerified": true,
+  "passwordLength": 10
+}
