@@ -91,7 +91,7 @@ public class LoggingOptions
 public class EvaluationOptions
 {
     /// <summary>
-    /// Evaluador a usar (Comparison, NCalc).
+    /// Evaluador a usar (Comparison, Compiled).
     /// </summary>
     public string EvaluatorType { get; set; } = "Comparison";
 
@@ -109,4 +109,9 @@ public class EvaluationOptions
     /// Habilitar métricas de performance.
     /// </summary>
     public bool EnableMetrics { get; set; } = false;
+
+    /// <summary>
+    /// Evaluar reglas en paralelo (ParallelRuleEngine) en lugar de secuencial.
+    /// </summary>
+    public bool Parallel { get; set; } = false;
 }

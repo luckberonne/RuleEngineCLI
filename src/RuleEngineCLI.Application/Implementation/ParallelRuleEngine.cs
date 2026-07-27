@@ -61,7 +61,7 @@ public sealed class ParallelRuleEngine : IRuleEngine
         return await EvaluateRulesInParallel(rules, input, cancellationToken);
     }
 
-    private Task<ValidationReportDto> EvaluateRulesInParallel(
+    private async Task<ValidationReportDto> EvaluateRulesInParallel(
         IEnumerable<Rule> rules,
         ValidationInputDto input,
         CancellationToken cancellationToken)
@@ -72,7 +72,7 @@ public sealed class ParallelRuleEngine : IRuleEngine
         if (rulesList.Count == 0)
         {
             _logger.LogWarning("No rules found to evaluate.");
-            return Task.FromResult(ValidationReportDto.FromDomain(ValidationReport.Create()));
+            return ValidationReportDto.FromDomain(ValidationReport.Create());
         }
 
         // ConcurrentBag es thread-safe para agregar resultados desde múltiples threads
@@ -88,8 +88,8 @@ public sealed class ParallelRuleEngine : IRuleEngine
 
         try
         {
-            // Evaluación paralela de reglas
-            Parallel.ForEach(rulesList, parallelOptions, rule =>
+            // Parallel.ForEachAsync evalúa concurrentemente sin bloquear threads en .Result
+            await Parallel.ForEachAsync(rulesList, parallelOptions, async (rule, ct) =>
             {
                 try
                 {
@@ -101,15 +101,13 @@ public sealed class ParallelRuleEngine : IRuleEngine
                     if (evaluator == null)
                     {
                         _logger.LogWarning($"No evaluator found for rule: {rule.Id}");
-                        var errorResult = RuleResult.Failure(rule, 
+                        var errorResult = RuleResult.Failure(rule,
                             $"No evaluator available for expression: {rule.Expression.Value}");
                         results.Add(errorResult);
                         return;
                     }
 
-                    // Evaluar la regla - necesitamos evaluar de forma sincrónica
-                    // IExpressionEvaluator solo tiene EvaluateAsync, lo usamos con .Result
-                    var passed = evaluator.EvaluateAsync(rule, input, cancellationToken).Result;
+                    var passed = await evaluator.EvaluateAsync(rule, input, ct);
 
                     var result = passed
                         ? RuleResult.Success(rule)
@@ -136,7 +134,7 @@ public sealed class ParallelRuleEngine : IRuleEngine
             _logger.LogInformation($"Parallel evaluation completed. Total: {report.TotalRulesEvaluated}, " +
                                  $"Passed: {report.TotalPassed}, Failed: {report.TotalFailed}");
 
-            return Task.FromResult(ValidationReportDto.FromDomain(report));
+            return ValidationReportDto.FromDomain(report);
         }
         catch (OperationCanceledException)
         {

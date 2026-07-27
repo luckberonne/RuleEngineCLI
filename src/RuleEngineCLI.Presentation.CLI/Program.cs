@@ -1,5 +1,6 @@
 using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
+using RuleEngineCLI.Application.Configuration;
 using RuleEngineCLI.Application.Services;
 using RuleEngineCLI.Infrastructure.Logging;
 using RuleEngineCLI.Presentation.CLI.DependencyInjection;
@@ -49,12 +50,36 @@ class Program
             description: "Evaluate only enabled rules",
             getDefaultValue: () => true);
 
+        var parallelOption = new Option<bool>(
+            aliases: new[] { "--parallel" },
+            description: "Evaluate rules concurrently instead of sequentially",
+            getDefaultValue: () => false);
+
+        var cacheOption = new Option<bool>(
+            aliases: new[] { "--cache" },
+            description: "Cache loaded rules in memory between calls",
+            getDefaultValue: () => true);
+
+        var metricsOption = new Option<bool>(
+            aliases: new[] { "--metrics" },
+            description: "Emit evaluation metrics via System.Diagnostics.Metrics",
+            getDefaultValue: () => false);
+
+        var evaluatorOption = new Option<string>(
+            aliases: new[] { "--evaluator" },
+            description: "Expression evaluator to use: Comparison or Compiled",
+            getDefaultValue: () => "Comparison");
+
         rootCommand.AddOption(rulesFileOption);
         rootCommand.AddOption(inputFileOption);
         rootCommand.AddOption(inlineDataOption);
         rootCommand.AddOption(verboseOption);
         rootCommand.AddOption(debugOption);
         rootCommand.AddOption(onlyEnabledOption);
+        rootCommand.AddOption(parallelOption);
+        rootCommand.AddOption(cacheOption);
+        rootCommand.AddOption(metricsOption);
+        rootCommand.AddOption(evaluatorOption);
 
         // Handler
         rootCommand.SetHandler(async (context) =>
@@ -65,6 +90,10 @@ class Program
             var verbose = context.ParseResult.GetValueForOption(verboseOption);
             var debug = context.ParseResult.GetValueForOption(debugOption);
             var onlyEnabled = context.ParseResult.GetValueForOption(onlyEnabledOption);
+            var parallel = context.ParseResult.GetValueForOption(parallelOption);
+            var cache = context.ParseResult.GetValueForOption(cacheOption);
+            var metrics = context.ParseResult.GetValueForOption(metricsOption);
+            var evaluatorType = context.ParseResult.GetValueForOption(evaluatorOption)!;
 
             try
             {
@@ -74,7 +103,11 @@ class Program
                     inlineData,
                     verbose,
                     debug,
-                    onlyEnabled);
+                    onlyEnabled,
+                    parallel,
+                    cache,
+                    metrics,
+                    evaluatorType);
 
                 context.ExitCode = exitCode;
             }
@@ -102,7 +135,11 @@ class Program
         string? inlineData,
         bool verbose,
         bool debug,
-        bool onlyEnabled)
+        bool onlyEnabled,
+        bool parallel,
+        bool cache,
+        bool metrics,
+        string evaluatorType)
     {
         // Validar que existe al menos una fuente de datos
         if (string.IsNullOrEmpty(inputFilePath) && string.IsNullOrEmpty(inlineData))
@@ -118,7 +155,13 @@ class Program
         var logLevel = debug ? LogLevel.Debug : LogLevel.Information;
 
         // Configurar DI
-        var serviceProvider = ServiceConfiguration.BuildServiceProvider(rulesFilePath, logLevel);
+        var options = new RuleEngineOptions { RulesFilePath = rulesFilePath };
+        options.Cache.Enabled = cache;
+        options.Evaluation.Parallel = parallel;
+        options.Evaluation.EnableMetrics = metrics;
+        options.Evaluation.EvaluatorType = evaluatorType;
+
+        var serviceProvider = ServiceConfiguration.BuildServiceProvider(options, logLevel);
         var ruleEngine = serviceProvider.GetRequiredService<IRuleEngine>();
         var logger = serviceProvider.GetRequiredService<ILogger>();
 

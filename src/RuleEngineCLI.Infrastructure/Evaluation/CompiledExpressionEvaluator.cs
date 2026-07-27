@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Linq.Expressions;
+using System.Reflection;
 using RuleEngineCLI.Application.DTOs;
 using RuleEngineCLI.Application.Services;
 using RuleEngineCLI.Domain.Entities;
@@ -104,8 +106,14 @@ public sealed class CompiledExpressionEvaluator : IExpressionEvaluator
         return BuildComparisonExpression(expression, inputParam);
     }
 
+    private static readonly MethodInfo CompareValuesMethod = typeof(CompiledExpressionEvaluator)
+        .GetMethod(nameof(CompareValues), BindingFlags.NonPublic | BindingFlags.Static)!;
+
     /// <summary>
     /// Construye una expresión de comparación (==, !=, >, <, >=, <=).
+    /// Delega la comparación real a <see cref="CompareValues"/> en lugar de generar
+    /// operadores tipados: los valores de entrada llegan como object (JSON deserializado,
+    /// típicamente double) y no se puede saber su tipo real en tiempo de compilación.
     /// </summary>
     private Expression BuildComparisonExpression(string expression, ParameterExpression inputParam)
     {
@@ -131,31 +139,79 @@ public sealed class CompiledExpressionEvaluator : IExpressionEvaluator
         var leftStr = expression.Substring(0, operatorIndex).Trim();
         var rightStr = expression.Substring(operatorIndex + foundOperator.Length).Trim();
 
-        // Construir expresiones izquierda y derecha
         var leftExpr = BuildValueExpression(leftStr, inputParam);
         var rightExpr = BuildValueExpression(rightStr, inputParam);
 
-        // Convertir a tipo común si es necesario
-        if (leftExpr.Type != rightExpr.Type)
+        return Expression.Call(
+            CompareValuesMethod,
+            Expression.Convert(leftExpr, typeof(object)),
+            Expression.Constant(foundOperator),
+            Expression.Convert(rightExpr, typeof(object)));
+    }
+
+    /// <summary>
+    /// Compara dos valores en tiempo de ejecución probando numérico, luego fecha, luego string.
+    /// Misma semántica que ComparisonExpressionEvaluator, para que ambos evaluadores se comporten igual.
+    /// </summary>
+    private static bool CompareValues(object? left, string op, object? right)
+    {
+        if (left == null || right == null)
         {
-            if (leftExpr.Type == typeof(object))
-                leftExpr = Expression.Convert(leftExpr, rightExpr.Type);
-            else if (rightExpr.Type == typeof(object))
-                rightExpr = Expression.Convert(rightExpr, leftExpr.Type);
+            return op switch
+            {
+                "==" => Equals(left, right),
+                "!=" => !Equals(left, right),
+                _ => throw new NotSupportedException($"Operator '{op}' not supported for null comparison.")
+            };
         }
 
-        // Crear expresión de comparación
-        return foundOperator switch
+        if (TryToDouble(left, out var leftNum) && TryToDouble(right, out var rightNum))
         {
-            "==" => Expression.Equal(leftExpr, rightExpr),
-            "!=" => Expression.NotEqual(leftExpr, rightExpr),
-            ">" => Expression.GreaterThan(leftExpr, rightExpr),
-            "<" => Expression.LessThan(leftExpr, rightExpr),
-            ">=" => Expression.GreaterThanOrEqual(leftExpr, rightExpr),
-            "<=" => Expression.LessThanOrEqual(leftExpr, rightExpr),
-            _ => throw new InvalidOperationException($"Unsupported operator: {foundOperator}")
+            return op switch
+            {
+                "==" => Math.Abs(leftNum - rightNum) < 0.0001,
+                "!=" => Math.Abs(leftNum - rightNum) >= 0.0001,
+                ">" => leftNum > rightNum,
+                "<" => leftNum < rightNum,
+                ">=" => leftNum >= rightNum,
+                "<=" => leftNum <= rightNum,
+                _ => throw new NotSupportedException($"Operator '{op}' not supported.")
+            };
+        }
+
+        if (TryToDate(left, out var leftDate) && TryToDate(right, out var rightDate))
+        {
+            return op switch
+            {
+                "==" => leftDate == rightDate,
+                "!=" => leftDate != rightDate,
+                ">" => leftDate > rightDate,
+                "<" => leftDate < rightDate,
+                ">=" => leftDate >= rightDate,
+                "<=" => leftDate <= rightDate,
+                _ => throw new NotSupportedException($"Operator '{op}' not supported.")
+            };
+        }
+
+        var comparison = string.Compare(left.ToString(), right.ToString(), StringComparison.OrdinalIgnoreCase);
+
+        return op switch
+        {
+            "==" => comparison == 0,
+            "!=" => comparison != 0,
+            ">" => comparison > 0,
+            "<" => comparison < 0,
+            ">=" => comparison >= 0,
+            "<=" => comparison <= 0,
+            _ => throw new NotSupportedException($"Operator '{op}' not supported.")
         };
     }
+
+    private static bool TryToDouble(object value, out double result)
+        => double.TryParse(Convert.ToString(value, CultureInfo.InvariantCulture), NumberStyles.Any, CultureInfo.InvariantCulture, out result);
+
+    private static bool TryToDate(object value, out DateTime result)
+        => DateTime.TryParse(Convert.ToString(value, CultureInfo.InvariantCulture), CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
 
     /// <summary>
     /// Construye una expresión para un valor (campo o literal).
@@ -180,15 +236,17 @@ public sealed class CompiledExpressionEvaluator : IExpressionEvaluator
         if (double.TryParse(value, out var doubleValue))
             return Expression.Constant(doubleValue, typeof(double));
 
-        // Campo del input (llamar a GetValue<object>)
-        var getValueMethod = typeof(ValidationInputDto).GetMethod(nameof(ValidationInputDto.GetValue))!
-            .MakeGenericMethod(typeof(object));
-
-        var fieldName = Expression.Constant(value, typeof(string));
-        var getValueCall = Expression.Call(inputParam, getValueMethod, fieldName);
-
-        return getValueCall;
+        // Ni número, ni bool, ni string entre comillas: puede ser un campo del input
+        // o un literal de texto sin comillas (p.ej. "status == active"). Se resuelve
+        // en runtime contra el input real, igual que ComparisonExpressionEvaluator.
+        return Expression.Call(ResolveFieldMethod, inputParam, Expression.Constant(value, typeof(string)));
     }
+
+    private static readonly MethodInfo ResolveFieldMethod = typeof(CompiledExpressionEvaluator)
+        .GetMethod(nameof(ResolveField), BindingFlags.NonPublic | BindingFlags.Static)!;
+
+    private static object? ResolveField(ValidationInputDto input, string token)
+        => input.HasProperty(token) ? input.Properties[token] : token;
 
     /// <summary>
     /// Obtiene estadísticas del cache de expresiones compiladas.

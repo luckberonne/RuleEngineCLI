@@ -9,7 +9,7 @@ namespace RuleEngineCLI.Infrastructure.Monitoring;
 /// Implementación de IRuleEngine que instrumenta las operaciones con métricas.
 /// Usa System.Diagnostics.Metrics para OpenTelemetry/Prometheus.
 /// </summary>
-public sealed class InstrumentedRuleEngine : IRuleEngine
+public sealed class InstrumentedRuleEngine : IRuleEngine, IDisposable
 {
     private readonly IRuleEngine _innerEngine;
     private readonly Meter _meter;
